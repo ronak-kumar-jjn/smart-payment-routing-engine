@@ -1,0 +1,36 @@
+{
+  "model_type": "XGBClassifier",
+  "version": "ml_v1",
+  "trained_at": "2026-04-15T11:21:59.151539",
+  "n_samples": 10000,
+  "n_features": 5,
+  "features": [
+    "amount",
+    "payment_method",
+    "currency_is_inr",
+    "hour_of_day",
+    "fraud_score"
+  ],
+  "classes": [
+    "razorpay",
+    "stripe",
+    "payu",
+    "cashfree"
+  ],
+  "metrics": {
+    "train_accuracy": 0.7074,
+    "test_accuracy": 0.5675
+  },
+  "feature_importance": {
+    "amount": 0.0522,
+    "payment_method": 0.2744,
+    "currency_is_inr": 0.5784,
+    "hour_of_day": 0.0457,
+    "fraud_score": 0.0494
+  },
+  "hyperparameters": {
+    "n_estimators": 150,
+    "max_depth": 6,
+    "learning_rate": 0.1
+  }
+}

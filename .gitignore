@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.env.local
+
+# Build
+dist/
+.next/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Models
+ml-service/models/*.joblib
+ml-service/models/*.pkl
+
+# Docker
+postgres_data/
+redis_data/

@@ -1,0 +1,112 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: smartroute-postgres
+    environment:
+      POSTGRES_DB: smartroute
+      POSTGRES_USER: smartroute
+      POSTGRES_PASSWORD: smartroute123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smartroute"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - smartroute-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: smartroute-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - smartroute-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: smartroute-backend
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: development
+      PORT: 5000
+      DATABASE_URL: postgresql://smartroute:smartroute123@postgres:5432/smartroute
+      REDIS_URL: redis://redis:6379
+      ML_SERVICE_URL: http://ml-service:8000
+      JWT_SECRET: hackathon-secret-key-2024
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - smartroute-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: smartroute-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:5000
+      NEXT_PUBLIC_WS_URL: ws://localhost:5000
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - smartroute-network
+
+  ml-service:
+    build:
+      context: ./ml-service
+      dockerfile: Dockerfile
+    container_name: smartroute-ml
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://smartroute:smartroute123@postgres:5432/smartroute
+      REDIS_URL: redis://redis:6379
+      MODEL_PATH: /app/models
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./ml-service:/app
+      - ml_models:/app/models
+    networks:
+      - smartroute-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  ml_models:
+
+networks:
+  smartroute-network:
+    driver: bridge
