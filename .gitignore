@@ -4,6 +4,12 @@ __pycache__/
 *.pyc
 .env.local
 
+# Database
+backend/data/
+
+# Env files
+backend/.env
+
 # Build
 dist/
 .next/

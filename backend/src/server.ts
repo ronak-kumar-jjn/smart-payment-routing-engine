@@ -17,8 +17,14 @@ const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
 
 // Middleware
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://frontend:3000',
+  process.env.FRONTEND_URL,
+].filter(Boolean) as string[];
+
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://frontend:3000'],
+  origin: allowedOrigins,
   credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -71,7 +77,7 @@ const start = async () => {
   // Setup WebSocket
   setupWebSocket(server);
   
-  server.listen(PORT, () => {
+  server.listen(Number(PORT), '0.0.0.0', () => {
     console.log(`✅ SmartRoute Backend running on port ${PORT}`);
     console.log(`   Database: ${dbOk ? '✅' : '❌'}`);
     console.log(`   Redis: ${redisOk ? '✅' : '❌'}`);
